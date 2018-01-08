@@ -1,0 +1,8 @@
+[package]
+authors = ["Marc Brinkmann <git@marcbrinkmann.de>"]
+name = "stok"
+version = "0.1.0"
+
+[dependencies]
+constant_time_eq = "0.1.3"
+rand = "0.4.2"
