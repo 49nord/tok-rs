@@ -15,16 +15,16 @@ use self::constant_time_eq::constant_time_eq;
 /// Tokens are generated using the system's random number generator (the
 /// default of the rand crate)
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct Token<S> {
+pub struct Token<S> {
     data: S,
 }
 
 impl<S: rand::Rand> Token<S> {
-    unsafe fn create(data: S) -> Token<S> {
+    pub unsafe fn create(data: S) -> Token<S> {
         Token { data }
     }
 
-    fn generate() -> Token<S> {
+    pub fn generate() -> Token<S> {
         let mut rng = rand::thread_rng();
 
         Token { data: rng.gen() }
