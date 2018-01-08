@@ -1,5 +1,8 @@
+extern crate serde;
 extern crate constant_time_eq;
 extern crate rand;
+#[macro_use]
+extern crate serde_derive;
 
 // FIXME: can we use core here?
 use std::cmp;
