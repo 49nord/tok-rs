@@ -1,3 +1,5 @@
+#![no_std]
+
 #[cfg(any(feature = "serialize", feature = "deserialize"))]
 extern crate serde;
 
@@ -10,8 +12,18 @@ use serde::Serializer;
 #[cfg(feature = "deserialize")]
 use serde::Deserializer;
 
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(feature = "std")]
 use std::cmp;
+#[cfg(not(feature = "std"))]
+use core::cmp;
+
+#[cfg(feature = "std")]
 use std::hash::{Hasher, Hash};
+#[cfg(not(feature = "std"))]
+use core::hash::{Hasher, Hash};
 
 use self::rand::Rng;
 use self::constant_time_eq::constant_time_eq;
@@ -95,6 +107,7 @@ impl<T: Hash> Hash for Token<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "std")]
     use std::collections::hash_map::DefaultHasher;
 
     #[test]
@@ -113,6 +126,7 @@ mod tests {
         assert!(tok < tok2 || tok > tok2)
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn test_hash() {
         let tok1: Token<[u8; 32]> = Token::generate();
