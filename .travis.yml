@@ -10,3 +10,9 @@ cache: cargo
 script:
   - cargo build --verbose --all --features serialize,deserialize
   - cargo test --verbose --all --features serialize,deserialize
+  - cargo build --verbose --all --features serialize
+  - cargo test --verbose --all --features serialize
+  - cargo build --verbose --all --features deserialize
+  - cargo test --verbose --all --features deserialize
+  - cargo build --verbose --all 
+  - cargo test --verbose --all 
