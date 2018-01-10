@@ -1,23 +1,20 @@
-extern crate clear_on_drop;
+#[cfg(any(feature = "serialize", feature = "deserialize"))]
 extern crate serde;
-extern crate constant_time_eq;
-extern crate rand;
+#[cfg(any(feature = "serialize", feature = "deserialize"))]
 #[macro_use]
 extern crate serde_derive;
 
-use clear_on_drop::clear::{Clear, InitializableFromZeroed, ZeroSafe};
+extern crate constant_time_eq;
+extern crate rand;
 
-// FIXME: can we use core here?
 use std::cmp;
 
 use self::rand::Rng;
 use self::constant_time_eq::constant_time_eq;
 
-/// Secure token data structure
-///
-/// Tokens are generated using the system's random number generator (the
-/// default of the rand crate)
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash)]
+#[cfg_attr(feature = "serialize", derive(Serialize))]
+#[cfg_attr(feature = "deserialize", derive(Deserialize))]
 pub struct Token<S> {
     data: S,
 }
@@ -65,30 +62,11 @@ impl<S: AsRef<[u8]>> PartialOrd for Token<S> {
     }
 }
 
-unsafe impl<S: ZeroSafe> ZeroSafe for Token<S> {}
-impl<S: InitializableFromZeroed> InitializableFromZeroed for Token<S> {
-    unsafe fn initialize(place: *mut Self) {}
-}
-
-trait Foo {
-    fn has_foo() -> bool {
-        true
-    }
-}
-
-// FIXME: would love to implement this, but currently it seems to be impossible
-//        https://github.com/rust-lang/rust/commit/5b2e8693e42dee545d336c0364773b3fbded93a5
-// impl<S: Clear> Drop for Token<S> {
-//     fn drop(&mut self) {
-//         self.clear();
-//     }
-// }
-
 #[cfg(test)]
 mod tests {
-    use clear_on_drop::clear::Clear;
     use super::*;
-    use std::{mem, slice};
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hasher, Hash};
 
     #[test]
     fn test_token_eq() {
@@ -107,14 +85,17 @@ mod tests {
     }
 
     #[test]
-    fn test_zeroing_on_drop() {
-        // `as_bytes()` has been lifted from clear_on_drop
-        fn as_bytes<T>(x: &T) -> &[u8] {
-            unsafe { slice::from_raw_parts(x as *const T as *const u8, mem::size_of_val(x)) }
-        }
+    fn test_hash() {
+        let tok1: Token<[u8; 32]> = Token::generate();
+        let mut s = DefaultHasher::new();
+        tok1.hash(&mut s);
+        let hash1 = s.finish();
 
-        let mut tok = unsafe { Token::create([0x42; 16]) };
-        tok.clear();
-        assert!(!as_bytes(&tok).contains(&0x42));
+        let tok2: Token<[u8; 32]> = Token::generate();
+        let mut s = DefaultHasher::new();
+        tok2.hash(&mut s);
+        let hash2 = s.finish();
+
+        assert!(hash1 != hash2);
     }
 }
