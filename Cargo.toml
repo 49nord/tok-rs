@@ -10,9 +10,8 @@ documentation = "https://docs.rs/tok"
 constant_time_eq = "0.1.3"
 rand = "0.4.2"
 serde = { version = "1.0.27", optional = true }
-serde_derive = { version = "1.0.27", optional = true }
 
 [features]
 default = []
-serialize = ["serde", "serde_derive"]
-deserialize = ["serde", "serde_derive"]
+serialize = ["serde"]
+deserialize = ["serde"]
