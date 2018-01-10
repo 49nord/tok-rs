@@ -1,3 +1,73 @@
+//! tok
+//! ===
+//!
+//! The `tok` crate provides a simple interface for securely holding session tokens.
+//!
+//! ```rust
+//! use tok::Token;
+//!
+//! #[derive(Debug)]
+//! struct User {
+//!     id: usize,
+//!     username: String,
+//!     session_token: Secret<String>,
+//! }
+//!
+//! let alice = User{
+//!     id: 1,
+//!     username: "alice".to_owned(),
+//!     session_token: Secret::new("no one should see this".to_owned()),
+//! };
+//!
+//! println!("Now talking to: {:?}", alice);
+//! ```
+//!
+//! Tokens are generated using the system's random number generator.
+//!
+//! By default, this crate does not prevent the token from leaking, e.g. into logs.
+//! You can use the [`sec` crate](https://github.com/49nord/sec-rs) in combination with this crate
+//! to prevent leaks:
+//!
+//! ```rust
+//! use sec::Secret;
+//! use tok::Token;
+//!
+//! type SecretToken = Secret<Token>;
+//!
+//! let token : SecretToken = Secret::new(Token::<[u8; 32]>::generate());
+//!
+//! println!("Generated token: {:?}", alice);
+//! ```
+//!
+//! This will yield the following output:
+//!
+//! ```raw
+//! Generated token: "..."
+//! ```
+//!
+//! ## Serde support (`deserialize`/`serialize` features)
+//!
+//! If the `deserialize` feature is enabled, any `Secret<T>` will automatically
+//! implement `Deserialize` from [Serde](https://crates.io/crates/serde):
+//!
+//! ```norun
+//! #[derive(Serialize, Deserialize)]
+//! struct User {
+//!     name: String,
+//!     token: Secret<Token<u8; 32>>,
+//! }
+//! ```
+//!
+//! Serialization can be enabled through the `serialize` feature.
+//!
+//! ## Security
+//!
+//! Tokens are compared in constant time.
+//!
+//! If protecting cryptographic secrets in-memory from stackdumps and similar
+//! is a concern, have a look at the [secrets](https://crates.io/crates/secrets)
+//! crate or similar crates.
+
 #![no_std]
 
 #[cfg(any(feature = "serialize", feature = "deserialize"))]
