@@ -102,10 +102,12 @@ use self::constant_time_eq::constant_time_eq;
 pub struct Token<S>(S);
 
 impl<S: rand::Rand> Token<S> {
+    #[inline]
     pub unsafe fn create(data: S) -> Token<S> {
         Token(data)
     }
 
+    #[inline]
     pub fn generate() -> Token<S> {
         let mut rng = rand::thread_rng();
 
@@ -114,12 +116,20 @@ impl<S: rand::Rand> Token<S> {
 }
 
 impl<S: AsRef<[u8]>> PartialEq for Token<S> {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
-        constant_time_eq(self.0.as_ref(), other.0.as_ref())
+        self.constant_time_eq(other)
     }
 }
 
 impl<S: AsRef<[u8]>> Eq for Token<S> {}
+
+impl<S: AsRef<[u8]>> Token<S> {
+    #[inline]
+    pub fn constant_time_eq(&self, other: &Self) -> bool {
+        constant_time_eq(self.0.as_ref(), other.0.as_ref())
+    }
+}
 
 impl<S: AsRef<[u8]>> PartialOrd for Token<S> {
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
